@@ -15,9 +15,9 @@ const Navbar = () => {
       {/* SEARCH BAR */}
 
       <div className="gap-4 flex items-center justify-between">
-        <AlignJustify size={20} />
+        <AlignJustify size={20} className="hover:cursor-pointer hover:text-fireflyOrange"/>
         <div className="hidden md:flex items-center text-xs px-2">
-          <Search size={20} />
+          <Search size={20} className="hover:cursor-pointer hover:text-fireflyOrange"/>
           <input
             type="text"
             placeholder="Search..."
@@ -29,15 +29,15 @@ const Navbar = () => {
       {/* ICONS AND USER */}
       <div className="flex items-center gap-6 justify-end w-full">
         <Minimize size={20} className="hidden" />
-        <Maximize size={20} />
-        <Sun size={20} />
-        <Bell size={20} />
+        <Maximize size={20} className="hover:cursor-pointer hover:text-fireflyOrange"/>
+        <Sun size={20} className="hover:cursor-pointer hover:text-fireflyOrange"/>
+        <Bell size={20} className="hover:cursor-pointer hover:text-fireflyOrange"/>
         <Image
           src="/images/dan.png"
           alt=""
           width={36}
           height={36}
-          className="rounded-full"
+          className="rounded-full hover:cursor-pointer"
         />
       </div>
     </div>

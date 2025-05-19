@@ -16,8 +16,8 @@ export const metadata: Metadata = {
   title: "Firefly IO Dashboard",
   description: "Dashboard for Firefly IO",
   icons: {
-    icon: "/favicon.png",
-    shortcut: "/favicon.png",
+    icon: "/images/favicon.png",
+    shortcut: "/images/favicon.png",
   },
 };
 

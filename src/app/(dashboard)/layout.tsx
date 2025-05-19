@@ -53,7 +53,7 @@ export default function DashboardLayout({
       {/* LEFT CONTENT */}
       <main className="w-[86%] md:w-[92%] lg:w-[84%] xl:w-[86%] bg-fireflyGray">
         <NavBar />
-        {/* {children} */}
+        {children}
       </main>
     </div>
   );
