@@ -43,22 +43,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import { useAuth } from "@/hooks/Authcontext";
 import { useNavigation } from "@/hooks/dashboardNavigation";
+import { role } from "@/services/mockData";
 
-export type UserRole = "admin" | "instructor" | "director";
-
-interface MenuItem {
-  title: string;
-  url: string;
-  icon: React.ComponentType;
-  visible: UserRole[];
-}
-
-const isValidRole = (role: string): role is UserRole =>
-  ["admin", "instructor", "director"].includes(role);
-
-const getMenuItems = (role: UserRole): MenuItem[] => [
+const menuItems = () => [
   {
     title: "Dashboard",
     url: `/${role}/dashboard`,
@@ -167,17 +155,6 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { state } = useSidebar();
   const { navigate, isNavigating } = useNavigation();
-  const { userRole } = useAuth();
-
-  const menuItems = useMemo(() => {
-    if (!isValidRole(userRole)) return [];
-
-    const allItems = getMenuItems(userRole);
-    return allItems.filter((item) => item.visible.includes(userRole));
-  }, [userRole]);
-
-  const logoutItem = menuItems.find((item) => item.title === "Logout");
-  const otherItems = menuItems.filter((item) => item.title !== "Logout");
 
   const isActive = (url: string) => pathname === url;
 
@@ -189,7 +166,20 @@ export function AppSidebar() {
     });
   };
 
-  const renderMenuItem = (item: MenuItem) => (
+  const { otherItems, logoutItem } = useMemo(() => {
+    const allItems = menuItems();
+    const visibleItems = allItems.filter((item) => item.visible.includes(role));
+
+    const logout = visibleItems.find((item) => item.title === "Logout");
+    const others = visibleItems.filter((item) => item.title !== "Logout");
+
+    return {
+      otherItems: others,
+      logoutItem: logout,
+    };
+  }, []);
+
+  const renderMenuItem = (item) => (
     <SidebarMenuItem key={item.title}>
       <TooltipProvider delayDuration={0}>
         <Tooltip>

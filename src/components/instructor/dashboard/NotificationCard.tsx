@@ -30,12 +30,16 @@ const NotificationCard = ({ notification }: NotificationCardProps) => {
       aria-label={`Notification: ${notification.title}`}
       className="shadow-md flex flex-col cursor-pointer bg-white rounded-md w-full p-2 sm:p-4 mt-2"
     >
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-        <span className="flex-1 min-w-0 text-ellipsis overflow-hidden whitespace-nowrap">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+        <span className="flex-1 min-w-0 self-center text-ellipsis overflow-hidden whitespace-nowrap">
           {notification.title}
         </span>
-        <div className="flex items-center gap-2 flex-shrink-0 self-end sm:self-auto ml-auto">
-          {hasBeenOpened ? <MailOpen size={16} /> : <MailWarning size={16} />}
+        <div className="flex items-center justify-center gap-2">
+          {hasBeenOpened ? (
+            <MailOpen size={16} />
+          ) : (
+            <MailWarning size={16} className="text-orange-500" />
+          )}
           <span className="text-sm whitespace-nowrap">{`${notification.date}, ${notification.time}`}</span>
           {isOpen ? (
             <ChevronUp size={25} className="text-fireflyOrange" />
