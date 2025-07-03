@@ -6,14 +6,11 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import Image from "next/image";
-import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import toast from "react-hot-toast";
 import { useAuth } from "@/hooks/Authcontext";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-
 import { login } from "@/services/authservice";
+import { useNavigation } from "@/hooks/dashboardNavigation";
 
 import {
   Form,
@@ -32,9 +29,8 @@ const formSchema = z.object({
 });
 
 const LoginForm = () => {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const { setUser } = useAuth();
+  const { setAccessToken, setUserRole } = useAuth();
+  const { navigate, isNavigating, setIsNavigating } = useNavigation();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -46,26 +42,29 @@ const LoginForm = () => {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsLoading(true);
-    const toastId = toast.loading("Signing you in...");
+    setIsNavigating(true);
 
     try {
-      console.log(values);
-      const user = await login(
+      const { accessToken, role } = await login(
         values.email,
         values.password,
         values.remember_me
       );
-      setUser(user);
-      const dashboardPath = `/${user.role?.toLowerCase()}/dashboard`;
-      console.log(user);
-      toast.success("Login successful", { id: toastId });
-      router.push(dashboardPath);
+      const normalizedRole = role.toLowerCase();
+
+      setAccessToken(accessToken);
+      setUserRole(normalizedRole as "admin" | "instructor" | "director" | "");
+
+      navigate({
+        href: `/${normalizedRole}/dashboard/`,
+        loadingMessage: "Signing you in...",
+        successMessage: "Login successful",
+        errorMessage: "Login failed",
+      });
     } catch (error) {
       form.setError("root", { message: "Invalid credentials" + error });
-      toast.error("Login failed", { id: toastId });
     } finally {
-      setIsLoading(false);
+      setIsNavigating(false);
     }
   }
 
@@ -153,10 +152,10 @@ const LoginForm = () => {
               </div>
               <Button
                 type="submit"
-                disabled={isLoading}
+                disabled={isNavigating}
                 className="w-full p-4 h-12 cursor-pointer"
               >
-                {isLoading ? (
+                {isNavigating ? (
                   <div className="flex items-center justify-center gap-2">
                     <Loader2 className="h-5 w-5 animate-spin" />
                     Logging in...

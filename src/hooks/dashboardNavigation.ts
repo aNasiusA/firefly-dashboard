@@ -32,7 +32,7 @@ export const useNavigation = () => {
       if (delayMs > 0) {
         await new Promise((resolve) => setTimeout(resolve, delayMs));
       }
-      await router.push(href);
+      router.push(href);
       toast.success(successMessage, {
         id: loadingToast,
         duration: 3000,
@@ -47,5 +47,5 @@ export const useNavigation = () => {
     }
   };
 
-  return { navigate, isNavigating, currentPath: pathname };
+  return { navigate, isNavigating, currentPath: pathname, setIsNavigating};
 };

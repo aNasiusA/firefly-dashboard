@@ -11,6 +11,7 @@ import { Statistic } from "@/components/instructor/analytics/StatCard";
 import { MonthlyPerformance } from "@/components/instructor/analytics/AveragePerformance";
 import { Assessments } from "@/components/instructor/analytics/TotalAssessments";
 import { AgeGenderData } from "@/components/instructor/analytics/AgeAndGenderChart";
+import { Reports } from "@/components/instructor/reports/TotalReports";
 
 export const role: UserRole = "instructor";
 
@@ -442,4 +443,25 @@ export const ageGenderData: AgeGenderData[] = [
   { age: "16", male: 15, female: 6 },
   { age: "17", male: 12, female: 3 },
   { age: "18+", male: 11, female: 12 },
+];
+
+export const reportz: Reports[] = [
+  { id: "rpt-jan", month: "January", total: 120, completed: 90, pending: 30 },
+  { id: "rpt-feb", month: "February", total: 100, completed: 70, pending: 30 },
+  { id: "rpt-mar", month: "March", total: 130, completed: 110, pending: 20 },
+  { id: "rpt-apr", month: "April", total: 115, completed: 85, pending: 30 },
+  { id: "rpt-may", month: "May", total: 140, completed: 125, pending: 15 },
+  { id: "rpt-jun", month: "June", total: 150, completed: 100, pending: 50 },
+  { id: "rpt-jul", month: "July", total: 160, completed: 130, pending: 30 },
+  { id: "rpt-aug", month: "August", total: 145, completed: 115, pending: 30 },
+  {
+    id: "rpt-sep",
+    month: "September",
+    total: 135,
+    completed: 100,
+    pending: 35,
+  },
+  { id: "rpt-oct", month: "October", total: 125, completed: 95, pending: 30 },
+  { id: "rpt-nov", month: "November", total: 110, completed: 80, pending: 30 },
+  { id: "rpt-dec", month: "December", total: 105, completed: 95, pending: 10 },
 ];

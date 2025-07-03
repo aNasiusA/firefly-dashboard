@@ -39,12 +39,12 @@ const TrainingCenterCard = ({
                 className="rounded-full"
               />
             </div>
-            {trainingCenterArray.name}
+            <span className="truncate">{trainingCenterArray.name}</span>
           </CardTitle>
           <CardAction className="flex-shrink-0">
-            <Button className="cursor-pointer">
-              <QrCode />
-              QR Code
+            <Button size="sm" className="whitespace-nowrap">
+              <QrCode className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">QR Code</span>
             </Button>
           </CardAction>
         </div>

@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Bell,
   BookUser,
@@ -17,6 +19,8 @@ import {
   Power,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
+import { useMemo } from "react";
 
 import {
   Sidebar,
@@ -31,9 +35,7 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
-import Image from "next/image";
-import { role } from "@/services/mockData";
-import { useNavigation } from "@/hooks/dashboardNavigation";
+
 import {
   Tooltip,
   TooltipContent,
@@ -41,16 +43,22 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+import { useAuth } from "@/hooks/Authcontext";
+import { useNavigation } from "@/hooks/dashboardNavigation";
+
 export type UserRole = "admin" | "instructor" | "director";
 
 interface MenuItem {
   title: string;
   url: string;
-  icon: string | React.ComponentType;
+  icon: React.ComponentType;
   visible: UserRole[];
 }
 
-const items: MenuItem[] = [
+const isValidRole = (role: string): role is UserRole =>
+  ["admin", "instructor", "director"].includes(role);
+
+const getMenuItems = (role: UserRole): MenuItem[] => [
   {
     title: "Dashboard",
     url: `/${role}/dashboard`,
@@ -156,28 +164,28 @@ const items: MenuItem[] = [
 ];
 
 export function AppSidebar() {
-  const { navigate, isNavigating } = useNavigation();
   const pathname = usePathname();
-  const { state } = useSidebar(); // Add this to get sidebar state
+  const { state } = useSidebar();
+  const { navigate, isNavigating } = useNavigation();
+  const { userRole } = useAuth();
 
-  // Filter items based on current role
-  const visibleItems = items.filter((item) =>
-    item.visible.includes(role as UserRole)
-  );
+  const menuItems = useMemo(() => {
+    if (!isValidRole(userRole)) return [];
 
-  // Separate logout from other items
-  const menuItems = visibleItems.filter((item) => item.title !== "Logout");
-  const logoutItem = visibleItems.find((item) => item.title === "Logout");
+    const allItems = getMenuItems(userRole);
+    return allItems.filter((item) => item.visible.includes(userRole));
+  }, [userRole]);
 
-  const isActiveRoute = (itemUrl: string) => {
-    return pathname === itemUrl;
-  };
+  const logoutItem = menuItems.find((item) => item.title === "Logout");
+  const otherItems = menuItems.filter((item) => item.title !== "Logout");
 
-  const handleNavigation = (url: string, title: string) => {
+  const isActive = (url: string) => pathname === url;
+
+  const handleClick = (url: string, label: string) => {
     navigate({
       href: url,
-      loadingMessage: `Loading ${title}...`,
-      successMessage: `${title} loaded successfully`,
+      loadingMessage: `Loading ${label}...`,
+      successMessage: `${label} loaded successfully`,
     });
   };
 
@@ -187,11 +195,11 @@ export function AppSidebar() {
         <Tooltip>
           <TooltipTrigger asChild>
             <SidebarMenuButton
-              onClick={() => handleNavigation(item.url, item.title)}
+              onClick={() => handleClick(item.url, item.title)}
               disabled={isNavigating}
-              className={`${
-                isActiveRoute(item.url) ? "bg-fireflyOrange " : ""
-              }`}
+              className={
+                isActive(item.url) ? "bg-fireflyOrange text-white" : ""
+              }
             >
               <item.icon />
               <span>{item.title}</span>
@@ -200,7 +208,6 @@ export function AppSidebar() {
           <TooltipContent
             side="right"
             className="bg-gray-800 text-white"
-            // Only show tooltip when sidebar is collapsed
             hidden={state !== "collapsed"}
           >
             {item.title}
@@ -217,14 +224,14 @@ export function AppSidebar() {
           className={`flex justify-center ${
             isNavigating ? "pointer-events-none opacity-50" : "cursor-pointer"
           }`}
-          onClick={() => handleNavigation("/", "Home")}
+          onClick={() => handleClick("/", "Home")}
         >
           <Image
             src="/auth.image.png"
             alt="App Logo"
             width={133}
-            priority
             height={27}
+            priority
             className="max-w-full h-auto w-auto max-h-[27px]"
           />
         </div>
@@ -235,7 +242,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="mt-3">
-              {menuItems.map(renderMenuItem)}
+              {otherItems.map(renderMenuItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -249,6 +256,7 @@ export function AppSidebar() {
           </SidebarGroup>
         )}
       </SidebarContent>
+
       <SidebarRail />
     </Sidebar>
   );

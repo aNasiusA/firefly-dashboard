@@ -26,33 +26,26 @@ export default function AuthLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${plusJakartaSans.className}`}>
-      <body>
-        <div className="flex h-screen">
-          {/* Main Image */}
-          <div className="hidden md:block w-1/2">
-            <Image
-              src="/image-login.jpg"
-              alt=""
-              priority
-              width={2048}
-              height={1148}
-              className="w-full object-cover h-full"
-            />
-          </div>
+    <div className={`flex h-screen ${plusJakartaSans.className}`}>
+      {/* Main Image */}
+      <div className="hidden md:block w-1/2">
+        <Image
+          src="/image-login.jpg"
+          alt=""
+          priority
+          width={2048}
+          height={1148}
+          className="w-full object-cover h-full"
+        />
+      </div>
 
-          {/* Right:login, forgot password, etc */}
-          <div className="w-full md:w-1/2 flex justify-center items-center">
-            <AuthProvider>
-              <Toaster
-                toastOptions={{ duration: 2000 }}
-                position="top-center"
-              />
-              {children}
-            </AuthProvider>
-          </div>
-        </div>
-      </body>
-    </html>
+      {/* Right:login, forgot password, etc */}
+      <div className="w-full md:w-1/2 flex justify-center items-center">
+        <AuthProvider>
+          <Toaster toastOptions={{ duration: 2000 }} position="top-center" />
+          {children}
+        </AuthProvider>
+      </div>
+    </div>
   );
 }
