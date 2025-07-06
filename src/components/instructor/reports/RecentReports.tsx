@@ -52,7 +52,7 @@ const RecentReports = () => {
 
   return (
     <Card className="border-[var(--border)] gap-0 h-full p-2 pt-4 w-full">
-      <CardHeader className="px-4">
+      <CardHeader className="px-4 flex justify-between mb-2">
         <CardTitle className="min-w-0 truncate overflow-hidden text-ellipsis">
           <h1 className="text-xl font-semibold text-gray-900">
             Recent Reports
@@ -88,12 +88,16 @@ const RecentReports = () => {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Reports
-                <ArrowUpDown />
+                <div className="flex items-center gap-1 w-full">
+                  <p>Reports</p>
+                  <ArrowUpDown size={16} />
+                </div>
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Date Submitted
-                <ArrowUpDown />
+                <div className="flex items-center gap-1 w-full">
+                  <p>Date Submitted</p>
+                  <ArrowUpDown size={16} />
+                </div>
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
@@ -104,7 +108,7 @@ const RecentReports = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredReports.map((report) => (
+            {filteredReports.slice(0,3).map((report) => (
               <tr
                 key={report.id}
                 className="hover:bg-gray-50 transition-colors"
@@ -137,7 +141,7 @@ const RecentReports = () => {
                     onClick={() => handleActionClick(report.name)}
                     className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-md flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors"
                   >
-                    <EllipsisVertical />
+                    <EllipsisVertical size={16} />
                   </button>
                 </td>
               </tr>
