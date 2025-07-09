@@ -48,8 +48,10 @@ const LoginForm = () => {
         values.password,
         values.remember_me
       );
+
       const user_role = response.user.user_role.toLowerCase();
-      localStorage.setItem("user_role", user_role);
+
+      document.cookie = `role=${user_role}; path=/; max-age=3600;`;
 
       navigate({
         href: `/${user_role}/dashboard`,

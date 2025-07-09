@@ -21,6 +21,7 @@ import {
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { useMemo } from "react";
+import { getCookie } from "@/services/helperFunction";
 
 import {
   Sidebar,
@@ -45,7 +46,7 @@ import {
 
 import { useNavigation } from "@/hooks/dashboardNavigation";
 
-const role = localStorage.getItem("user_role");
+const role = getCookie("role");
 
 const menuItems = () => [
   {
