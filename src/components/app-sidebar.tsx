@@ -44,7 +44,8 @@ import {
 } from "@/components/ui/tooltip";
 
 import { useNavigation } from "@/hooks/dashboardNavigation";
-import { role } from "@/services/mockData";
+
+const role = localStorage.getItem("user_role");
 
 const menuItems = () => [
   {
@@ -166,6 +167,16 @@ export function AppSidebar() {
     });
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("user_role");
+    navigate({
+      href: "/login",
+      loadingMessage: "Logging out...",
+      successMessage: "Logout successful",
+      errorMessage: "Logout failed. Please try again.",
+    });
+  };
+
   const { otherItems, logoutItem } = useMemo(() => {
     const allItems = menuItems();
     const visibleItems = allItems.filter((item) => item.visible.includes(role));
@@ -186,6 +197,34 @@ export function AppSidebar() {
           <TooltipTrigger asChild>
             <SidebarMenuButton
               onClick={() => handleClick(item.url, item.title)}
+              disabled={isNavigating}
+              className={
+                isActive(item.url) ? "bg-fireflyOrange text-white" : ""
+              }
+            >
+              <item.icon />
+              <span>{item.title}</span>
+            </SidebarMenuButton>
+          </TooltipTrigger>
+          <TooltipContent
+            side="right"
+            className="bg-gray-800 text-white"
+            hidden={state !== "collapsed"}
+          >
+            {item.title}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </SidebarMenuItem>
+  );
+
+  const renderLogoutItem = (item) => (
+    <SidebarMenuItem key={item.title}>
+      <TooltipProvider delayDuration={0}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <SidebarMenuButton
+              onClick={handleLogout}
               disabled={isNavigating}
               className={
                 isActive(item.url) ? "bg-fireflyOrange text-white" : ""
@@ -241,7 +280,7 @@ export function AppSidebar() {
           <SidebarGroup>
             <SidebarGroupLabel>Other</SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>{renderMenuItem(logoutItem)}</SidebarMenu>
+              <SidebarMenu>{renderLogoutItem(logoutItem)}</SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
         )}

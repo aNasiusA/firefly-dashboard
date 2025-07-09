@@ -19,8 +19,7 @@ export const login = async (
       }
     );
 
-    const user = response?.data?.user;
-    return user;
+    return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.error(
@@ -29,24 +28,25 @@ export const login = async (
       );
       throw error.response?.data || new Error("Login failed");
     }
+
     console.error("Unexpected error:", error);
     throw new Error("An unexpected error occurred");
   }
 };
 
-export const getUser = async (id: number) => {
+export const logout = async () => {
   try {
-    const response = await axios.get(`${baseEndPoint}/api/users/${id}/`);
-    const user = response?.data?.user;
-    return user;
+    axios.post(`${baseEndPoint}/api/logout/`, {}, { withCredentials: true });
+    return { message: "Logout successful" };
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.error(
-        "Could not get user:",
+        "Login failed:",
         error.response?.data?.message || error.message
       );
-      throw error.response?.data || new Error("Could not get user");
+      throw error.response?.data || new Error("Login failed");
     }
+
     console.error("Unexpected error:", error);
     throw new Error("An unexpected error occurred");
   }

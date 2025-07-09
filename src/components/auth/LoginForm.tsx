@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import Image from "next/image";
 import { Loader2 } from "lucide-react";
-import { useAuth } from "@/hooks/Authcontext";
 import Link from "next/link";
 import { login } from "@/services/authservice";
 import { useNavigation } from "@/hooks/dashboardNavigation";
@@ -29,7 +28,6 @@ const formSchema = z.object({
 });
 
 const LoginForm = () => {
-  const { setAccessToken, setUserRole } = useAuth();
   const { navigate, isNavigating, setIsNavigating } = useNavigation();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -45,24 +43,22 @@ const LoginForm = () => {
     setIsNavigating(true);
 
     try {
-      const { accessToken, role } = await login(
+      const response = await login(
         values.email,
         values.password,
         values.remember_me
       );
-      const normalizedRole = role.toLowerCase();
-
-      setAccessToken(accessToken);
-      setUserRole(normalizedRole as "admin" | "instructor" | "director" | "");
+      const user_role = response.user.user_role.toLowerCase();
+      localStorage.setItem("user_role", user_role);
 
       navigate({
-        href: `/${normalizedRole}/dashboard/`,
-        loadingMessage: "Signing you in...",
-        successMessage: "Login successful",
-        errorMessage: "Login failed",
+        href: `/${user_role}/dashboard`,
+        loadingMessage: "Logging in...",
+        successMessage: "Login successful!",
+        errorMessage: "Login failed. Please try again.",
       });
     } catch (error) {
-      form.setError("root", { message: "Invalid credentials" + error });
+      form.setError("root", { message: "Invalid credentials: " + error });
     } finally {
       setIsNavigating(false);
     }
