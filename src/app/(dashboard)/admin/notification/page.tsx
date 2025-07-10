@@ -1,11 +1,7 @@
-"use client";
-
-import { RouteLoader } from "@/components/shared/RouteLoader";
-
-export default function AdminDashboardPage() {
+const Page = () => {
   return (
-    // <RouteLoader allowedRoles={["Admin"]}>
-    <div>Admin Notification Content</div>
-    // </RouteLoader>
-  );
+    <div className=''>Page</div>
+  )
 }
+
+export default Page

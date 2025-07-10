@@ -46,7 +46,7 @@ const RecentReports = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const handleActionClick = (reportName) => {
+  const handleActionClick = (reportName: string) => {
     alert(`Action clicked for: ${reportName}`);
   };
 
@@ -108,7 +108,7 @@ const RecentReports = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredReports.slice(0,3).map((report) => (
+            {filteredReports.slice(0, 3).map((report) => (
               <tr
                 key={report.id}
                 className="hover:bg-gray-50 transition-colors"

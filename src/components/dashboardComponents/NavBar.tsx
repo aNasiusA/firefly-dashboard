@@ -8,7 +8,9 @@ import { Button } from "../ui/button";
 import Image from "next/image";
 import { ModeToggle } from "./ModeToggle";
 import { useNavigation } from "@/hooks/dashboardNavigation";
-import { role } from "@/services/mockData";
+import { getCookie } from "@/services/helperFunction";
+
+const role: string = getCookie("role");
 import {
   Tooltip,
   TooltipContent,

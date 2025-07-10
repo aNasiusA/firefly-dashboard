@@ -23,7 +23,7 @@ const ReportsPage = () => {
             <TotalReports ReportArray={reportz} defaultReportId="rpt-jan" />
           </div>
           <div className="w-3/4">
-            <RecentReports ReportArray={reportz} defaultReportId="rpt-jan" />
+            <RecentReports />
           </div>
         </div>
       </CardContent>

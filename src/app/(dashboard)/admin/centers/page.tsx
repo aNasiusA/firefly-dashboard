@@ -1,12 +1,5 @@
-"use client";
+const Page = () => {
+  return <div className="">Page</div>;
+};
 
-import { RouteLoader } from "@/components/shared/RouteLoader";
-
-export default function AdminDashboardPage() {
-  return (
-    // <RouteLoader allowedRoles={["Admin"]}>
-    <div>Admin Centers Content</div>
-    // </RouteLoader>
-  );
-}
-//no comment
+export default Page;

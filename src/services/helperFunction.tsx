@@ -1,5 +1,5 @@
-export function getCookie(name: string): string | null {
-  if (typeof document === "undefined") return null;
+export function getCookie(name: string): string {
+  if (typeof document === "undefined") return "";
 
   const cookies = document.cookie.split(";").map((c) => c.trim());
   for (const cookie of cookies) {
@@ -7,5 +7,5 @@ export function getCookie(name: string): string | null {
     if (key === name) return value;
   }
 
-  return null;
+  return "";
 }

@@ -1,9 +1,7 @@
-import { RouteLoader } from "@/components/shared/RouteLoader";
-
-export default function DirectorDashboardPage() {
+const Page = () => {
   return (
-    // <RouteLoader allowedRoles={["Director"]}>
-    <div>Director Students Content</div>
-    // </RouteLoader>
-  );
+    <div className=''>Page</div>
+  )
 }
+
+export default Page

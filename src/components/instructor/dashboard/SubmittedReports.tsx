@@ -10,7 +10,9 @@ import { Button } from "@/components/ui/button";
 import SubmittedReportsCard from "./SubmittedReportsCard";
 import { reports } from "@/services/mockData";
 import { useNavigation } from "@/hooks/dashboardNavigation";
-import { role } from "@/services/mockData";
+import { getCookie } from "@/services/helperFunction";
+
+const role: string = getCookie("role");
 
 const SubmittedReports = () => {
   const { navigate } = useNavigation();

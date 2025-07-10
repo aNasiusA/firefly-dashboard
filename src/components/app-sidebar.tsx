@@ -36,7 +36,14 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
+import type { LucideIcon } from "lucide-react";
 
+interface MenuItem {
+  title: string;
+  url: string;
+  icon: LucideIcon;
+  visible: string[];
+}
 import {
   Tooltip,
   TooltipContent,
@@ -46,9 +53,9 @@ import {
 
 import { useNavigation } from "@/hooks/dashboardNavigation";
 
-const role = getCookie("role");
+const role: string = getCookie("role");
 
-const menuItems = () => [
+const menuItems = [
   {
     title: "Dashboard",
     url: `/${role}/dashboard`,
@@ -179,7 +186,7 @@ export function AppSidebar() {
   };
 
   const { otherItems, logoutItem } = useMemo(() => {
-    const allItems = menuItems();
+    const allItems = menuItems;
     const visibleItems = allItems.filter((item) => item.visible.includes(role));
 
     const logout = visibleItems.find((item) => item.title === "Logout");
@@ -191,7 +198,7 @@ export function AppSidebar() {
     };
   }, []);
 
-  const renderMenuItem = (item) => (
+  const renderMenuItem = (item: MenuItem) => (
     <SidebarMenuItem key={item.title}>
       <TooltipProvider delayDuration={0}>
         <Tooltip>
@@ -219,7 +226,7 @@ export function AppSidebar() {
     </SidebarMenuItem>
   );
 
-  const renderLogoutItem = (item) => (
+  const renderLogoutItem = (item: MenuItem) => (
     <SidebarMenuItem key={item.title}>
       <TooltipProvider delayDuration={0}>
         <Tooltip>

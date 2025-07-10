@@ -1,11 +1,7 @@
-// Placeholder data for dashboard components
-
-//Center stats
 import { Center } from "@/components/instructor/dashboard/CenterStats";
 import { Instructor } from "@/components/instructor/dashboard/InstructorCard";
 import { Session } from "@/components/instructor/dashboard/Sessions";
 import { Notification } from "@/components/instructor/dashboard/NotificationCard";
-import { UserRole } from "@/components/app-sidebar";
 import { TrainingCenter } from "@/components/instructor/trainingCenters/TrainingCenterCard";
 import { Statistic } from "@/components/instructor/analytics/StatCard";
 import { MonthlyPerformance } from "@/components/instructor/analytics/AveragePerformance";
@@ -13,7 +9,6 @@ import { Assessments } from "@/components/instructor/analytics/TotalAssessments"
 import { AgeGenderData } from "@/components/instructor/analytics/AgeAndGenderChart";
 import { Reports } from "@/components/instructor/reports/TotalReports";
 
-export const role: UserRole = "instructor";
 
 export const centers: Center[] = [
   {

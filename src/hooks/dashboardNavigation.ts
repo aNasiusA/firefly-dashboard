@@ -38,6 +38,7 @@ export const useNavigation = () => {
         duration: 3000,
       });
     } catch (error) {
+      console.log(error);
       toast.error(errorMessage, {
         id: loadingToast,
         duration: 3000,
@@ -47,5 +48,5 @@ export const useNavigation = () => {
     }
   };
 
-  return { navigate, isNavigating, currentPath: pathname, setIsNavigating};
+  return { navigate, isNavigating, currentPath: pathname, setIsNavigating };
 };
