@@ -7,6 +7,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import {
   Search,
   ArrowUpDown,
@@ -24,8 +25,10 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { useNavigation } from "@/hooks/dashboardNavigation";
 
 const AllReports = () => {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("Status");
   const [currentPage, setCurrentPage] = useState(1);
@@ -33,6 +36,7 @@ const AllReports = () => {
   const [sortField, setSortField] = useState("");
   const [sortDirection, setSortDirection] = useState("asc");
   const [showActionMenu, setShowActionMenu] = useState(null);
+  const { navigate, isNavigating } = useNavigation();
 
   // Extended sample data with time submitted
   const reports = [
@@ -201,22 +205,37 @@ const AllReports = () => {
     setCurrentPage(1);
   };
 
-  const handleAction = (action, reportName) => {
+  const role = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith("role"))
+    ?.split("=")[1];
+
+  const handleAction = (action, report) => {
     setShowActionMenu(null);
     switch (action) {
       case "view":
-        alert(`Viewing: ${reportName}`);
+        navigate({
+          href: `/${role}/reports/${report.id}`,
+          loadingMessage: `Loading ${report.name}...`,
+          successMessage: `${report.name} loaded successfully`,
+        });
         break;
       case "edit":
-        alert(`Editing: ${reportName}`);
+        navigate({
+          href: `/${role}/reports/${report.id}/edit`,
+          loadingMessage: `Loading ${report.name}...`,
+          successMessage: `${report.name} loaded successfully`,
+        });
         break;
       case "delete":
-        if (confirm(`Are you sure you want to delete: ${reportName}?`)) {
-          alert(`Deleted: ${reportName}`);
+        if (confirm(`Are you sure you want to delete: ${report.name}?`)) {
+          // Here you would typically call an API to delete the report
+          alert(`Deleted: ${report.name}`);
+          // You might also want to refresh the data or remove from local state
         }
         break;
       default:
-        alert(`Action ${action} for: ${reportName}`);
+        alert(`Action ${action} for: ${report.name}`);
     }
   };
 
@@ -370,33 +389,37 @@ const AllReports = () => {
                         <EllipsisVertical size={16} />
                       </button>
                       {showActionMenu === report.id && (
-                        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
-                          <div className="py-1">
-                            <button
-                              onClick={() => handleAction("view", report.name)}
-                              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                            >
-                              <Eye size={16} />
-                              View Report
-                            </button>
-                            <button
-                              onClick={() => handleAction("edit", report.name)}
-                              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                            >
-                              <Edit size={16} />
-                              Edit Report
-                            </button>
-                            <button
-                              onClick={() =>
-                                handleAction("delete", report.name)
-                              }
-                              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                            >
-                              <Trash2 size={16} />
-                              Delete Report
-                            </button>
+                        <>
+                          <div
+                            className="fixed inset-0 z-40"
+                            onClick={() => setShowActionMenu(null)}
+                          />
+                          <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                            <div className="py-1">
+                              <button
+                                onClick={() => handleAction("view", report)}
+                                className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                              >
+                                <Eye size={16} />
+                                View Report
+                              </button>
+                              <button
+                                onClick={() => handleAction("edit", report)}
+                                className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                              >
+                                <Edit size={16} />
+                                Edit Report
+                              </button>
+                              <button
+                                onClick={() => handleAction("delete", report)}
+                                className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                              >
+                                <Trash2 size={16} />
+                                Delete Report
+                              </button>
+                            </div>
                           </div>
-                        </div>
+                        </>
                       )}
                     </td>
                   </tr>
