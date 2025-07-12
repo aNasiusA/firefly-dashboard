@@ -6,7 +6,7 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   Search,
@@ -28,17 +28,16 @@ import {
 import { useNavigation } from "@/hooks/dashboardNavigation";
 
 const AllReports = () => {
-  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("Status");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [sortField, setSortField] = useState("");
   const [sortDirection, setSortDirection] = useState("asc");
-  const [showActionMenu, setShowActionMenu] = useState(null);
+  const [showActionMenu, setShowActionMenu] = useState<number | null>(null);
+  const actionMenuRef = useRef<HTMLDivElement | null>(null);
   const { navigate, isNavigating } = useNavigation();
 
-  // Extended sample data with time submitted
   const reports = [
     {
       id: 1,
@@ -126,7 +125,6 @@ const AllReports = () => {
     },
   ];
 
-  // Filter and sort reports
   const filteredAndSortedReports = useMemo(() => {
     const filtered = reports.filter((report) => {
       const matchesSearch = report.name
@@ -136,17 +134,14 @@ const AllReports = () => {
         statusFilter === "Status" ||
         (statusFilter === "Submitted" && report.status === "submitted") ||
         (statusFilter === "Not Submitted" && report.status === "not submitted");
-
       return matchesSearch && matchesStatus;
     });
 
-    // Sort reports
     if (sortField) {
       filtered.sort((a, b) => {
         let aValue = a[sortField];
         let bValue = b[sortField];
 
-        // Handle null dates
         if (sortField === "dateSubmitted") {
           if (!aValue && !bValue) return 0;
           if (!aValue) return 1;
@@ -155,18 +150,17 @@ const AllReports = () => {
           bValue = new Date(bValue);
         }
 
-        // Handle time sorting
         if (sortField === "timeSubmitted") {
           if (!aValue && !bValue) return 0;
           if (!aValue) return 1;
           if (!bValue) return -1;
-          // Convert time to 24-hour format for proper sorting
-          const convertTo24Hour = (time) => {
+          const convertTo24Hour = (time: string) => {
             const [timePart, modifier] = time.split(" ");
             let [hours, minutes] = timePart.split(":");
             if (hours === "12") hours = "00";
-            if (modifier === "PM") hours = parseInt(hours, 10) + 12;
-            return hours + ":" + minutes;
+            if (modifier === "PM")
+              hours = (parseInt(hours, 10) + 12).toString();
+            return `${hours.padStart(2, "0")}:${minutes}`;
           };
           aValue = convertTo24Hour(aValue);
           bValue = convertTo24Hour(bValue);
@@ -181,13 +175,12 @@ const AllReports = () => {
     return filtered;
   }, [searchTerm, statusFilter, sortField, sortDirection]);
 
-  // Pagination
   const totalPages = Math.ceil(filteredAndSortedReports.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentReports = filteredAndSortedReports.slice(startIndex, endIndex);
 
-  const handleSort = (field) => {
+  const handleSort = (field: string) => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
@@ -196,22 +189,13 @@ const AllReports = () => {
     }
   };
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  const handleItemsPerPageChange = (newItemsPerPage) => {
-    setItemsPerPage(parseInt(newItemsPerPage));
-    setCurrentPage(1);
-  };
-
-  const role = document.cookie
-    .split("; ")
-    .find((row) => row.startsWith("role"))
-    ?.split("=")[1];
-
-  const handleAction = (action, report) => {
+  const handleAction = (action: string, report: any) => {
     setShowActionMenu(null);
+    const role = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("role"))
+      ?.split("=")[1];
+
     switch (action) {
       case "view":
         navigate({
@@ -229,14 +213,17 @@ const AllReports = () => {
         break;
       case "delete":
         if (confirm(`Are you sure you want to delete: ${report.name}?`)) {
-          // Here you would typically call an API to delete the report
           alert(`Deleted: ${report.name}`);
-          // You might also want to refresh the data or remove from local state
         }
         break;
       default:
         alert(`Action ${action} for: ${report.name}`);
     }
+  };
+
+  const handleItemsPerPageChange = (value: string) => {
+    setItemsPerPage(parseInt(value));
+    setCurrentPage(1);
   };
 
   const renderPaginationItems = () => {
@@ -256,7 +243,7 @@ const AllReports = () => {
             href="#"
             onClick={(e) => {
               e.preventDefault();
-              handlePageChange(i);
+              setCurrentPage(i);
             }}
             isActive={currentPage === i}
           >
@@ -268,6 +255,26 @@ const AllReports = () => {
 
     return items;
   };
+
+  // Detect click outside action menu
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        actionMenuRef.current &&
+        !actionMenuRef.current.contains(e.target as Node)
+      ) {
+        setShowActionMenu(null);
+      }
+    };
+
+    if (showActionMenu !== null) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showActionMenu]);
 
   return (
     <Card className="border-[var(--border)] gap-0 h-full p-2 pt-4 w-full">
@@ -284,7 +291,7 @@ const AllReports = () => {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-48 pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+              className="block w-48 pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
               placeholder="Search reports..."
             />
           </div>
@@ -308,7 +315,7 @@ const AllReports = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   <button
                     onClick={() => handleSort("name")}
-                    className="flex items-center gap-1 w-full hover:text-gray-700 transition-colors"
+                    className="flex items-center gap-1 w-full hover:text-gray-700"
                   >
                     <span>Reports</span>
                     <ArrowUpDown size={16} />
@@ -317,7 +324,7 @@ const AllReports = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   <button
                     onClick={() => handleSort("dateSubmitted")}
-                    className="flex items-center gap-1 w-full hover:text-gray-700 transition-colors"
+                    className="flex items-center gap-1 w-full hover:text-gray-700"
                   >
                     <span>Date Submitted</span>
                     <ArrowUpDown size={16} />
@@ -326,7 +333,7 @@ const AllReports = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   <button
                     onClick={() => handleSort("timeSubmitted")}
-                    className="flex items-center gap-1 w-full hover:text-gray-700 transition-colors"
+                    className="flex items-center gap-1 w-full hover:text-gray-700"
                   >
                     <span>Time Submitted</span>
                     <ArrowUpDown size={16} />
@@ -343,30 +350,23 @@ const AllReports = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {currentReports.length > 0 ? (
                 currentReports.map((report) => (
-                  <tr
-                    key={report.id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <tr key={report.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
                       {report.name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {report.dateSubmitted ? (
-                        <span>{report.dateSubmitted}</span>
-                      ) : (
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {report.dateSubmitted || (
                         <span className="text-gray-400 italic">-</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {report.timeSubmitted ? (
-                        <span>{report.timeSubmitted}</span>
-                      ) : (
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {report.timeSubmitted || (
                         <span className="text-gray-400 italic">-</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           report.status === "submitted"
                             ? "bg-green-100 text-green-800"
                             : "bg-red-100 text-red-800"
@@ -377,49 +377,43 @@ const AllReports = () => {
                           : "Not submitted"}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap relative">
+                    <td className="px-6 py-4 relative">
                       <button
                         onClick={() =>
                           setShowActionMenu(
                             showActionMenu === report.id ? null : report.id
                           )
                         }
-                        className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-md flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors"
+                        className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-md flex items-center justify-center text-gray-500 hover:text-gray-700"
                       >
                         <EllipsisVertical size={16} />
                       </button>
                       {showActionMenu === report.id && (
-                        <>
-                          <div
-                            className="fixed inset-0 z-40"
-                            onClick={() => setShowActionMenu(null)}
-                          />
-                          <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
-                            <div className="py-1">
-                              <button
-                                onClick={() => handleAction("view", report)}
-                                className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                              >
-                                <Eye size={16} />
-                                View Report
-                              </button>
-                              <button
-                                onClick={() => handleAction("edit", report)}
-                                className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                              >
-                                <Edit size={16} />
-                                Edit Report
-                              </button>
-                              <button
-                                onClick={() => handleAction("delete", report)}
-                                className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                              >
-                                <Trash2 size={16} />
-                                Delete Report
-                              </button>
-                            </div>
+                        <div
+                          ref={actionMenuRef}
+                          className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                        >
+                          <div className="py-1">
+                            <button
+                              onClick={() => handleAction("view", report)}
+                              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                            >
+                              <Eye size={16} /> View Report
+                            </button>
+                            <button
+                              onClick={() => handleAction("edit", report)}
+                              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                            >
+                              <Edit size={16} /> Edit Report
+                            </button>
+                            <button
+                              onClick={() => handleAction("delete", report)}
+                              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                            >
+                              <Trash2 size={16} /> Delete Report
+                            </button>
                           </div>
-                        </>
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -427,7 +421,7 @@ const AllReports = () => {
               ) : (
                 <tr>
                   <td
-                    colSpan="5"
+                    colSpan={5}
                     className="px-6 py-8 text-center text-gray-500"
                   >
                     No reports found matching your criteria.
@@ -440,20 +434,18 @@ const AllReports = () => {
       </CardContent>
       <CardFooter>
         <div className="flex justify-between items-center w-full">
-          <div>
-            <p className="text-sm text-gray-700">
-              Showing {startIndex + 1} to{" "}
-              {Math.min(endIndex, filteredAndSortedReports.length)} of{" "}
-              {filteredAndSortedReports.length} results
-            </p>
-          </div>
+          <p className="text-sm text-gray-700">
+            Showing {startIndex + 1} to{" "}
+            {Math.min(endIndex, filteredAndSortedReports.length)} of{" "}
+            {filteredAndSortedReports.length} results
+          </p>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-700">Show:</span>
               <select
                 value={itemsPerPage}
                 onChange={(e) => handleItemsPerPageChange(e.target.value)}
-                className="block w-20 px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                className="w-20 px-3 py-2 border border-gray-300 rounded-md bg-white text-sm"
               >
                 <option value={10}>10</option>
                 <option value={20}>20</option>
@@ -468,7 +460,7 @@ const AllReports = () => {
                       href="#"
                       onClick={(e) => {
                         e.preventDefault();
-                        if (currentPage > 1) handlePageChange(currentPage - 1);
+                        if (currentPage > 1) setCurrentPage(currentPage - 1);
                       }}
                       className={
                         currentPage === 1
@@ -489,7 +481,7 @@ const AllReports = () => {
                       onClick={(e) => {
                         e.preventDefault();
                         if (currentPage < totalPages)
-                          handlePageChange(currentPage + 1);
+                          setCurrentPage(currentPage + 1);
                       }}
                       className={
                         currentPage === totalPages

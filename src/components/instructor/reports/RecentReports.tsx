@@ -1,6 +1,5 @@
 "use client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import {
   Search,
   ArrowUpDown,
@@ -8,8 +7,9 @@ import {
   Eye,
   Edit,
   Trash2,
-  ExternalLink,
 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useNavigation } from "@/hooks/dashboardNavigation";
 
 const RecentReports = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -17,6 +17,8 @@ const RecentReports = () => {
   const [sortField, setSortField] = useState("");
   const [sortDirection, setSortDirection] = useState("asc");
   const [showActionMenu, setShowActionMenu] = useState(null);
+  const actionMenuRef = useRef(null);
+  const { navigate } = useNavigation();
 
   const reports = [
     {
@@ -57,7 +59,6 @@ const RecentReports = () => {
     },
   ];
 
-  // Filter and sort reports
   const filteredAndSortedReports = useMemo(() => {
     const filtered = reports.filter((report) => {
       const matchesSearch = report.name
@@ -71,13 +72,11 @@ const RecentReports = () => {
       return matchesSearch && matchesStatus;
     });
 
-    // Sort reports
     if (sortField) {
       filtered.sort((a, b) => {
         let aValue = a[sortField];
         let bValue = b[sortField];
 
-        // Handle null dates
         if (sortField === "dateSubmitted") {
           if (!aValue && !bValue) return 0;
           if (!aValue) return 1;
@@ -95,7 +94,6 @@ const RecentReports = () => {
     return filtered;
   }, [searchTerm, statusFilter, sortField, sortDirection]);
 
-  // Show only the first 3 recent reports
   const recentReports = filteredAndSortedReports.slice(0, 3);
 
   const handleSort = (field) => {
@@ -107,38 +105,56 @@ const RecentReports = () => {
     }
   };
 
-  const handleAction = (action, reportName) => {
+  const role = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith("role"))
+    ?.split("=")[1];
+
+  const handleAction = (action, report) => {
     setShowActionMenu(null);
+    const basePath = `/${role}/reports/${report.id}`;
+    const navOptions = {
+      loadingMessage: `Loading ${report.name}...`,
+      successMessage: `${report.name} loaded successfully`,
+    };
+
     switch (action) {
       case "view":
-        alert(`Viewing: ${reportName}`);
+        navigate({ href: basePath, ...navOptions });
         break;
       case "edit":
-        alert(`Editing: ${reportName}`);
+        navigate({ href: `${basePath}/edit`, ...navOptions });
         break;
       case "delete":
-        if (confirm(`Are you sure you want to delete: ${reportName}?`)) {
-          alert(`Deleted: ${reportName}`);
+        if (confirm(`Are you sure you want to delete: ${report.name}?`)) {
+          alert(`Deleted: ${report.name}`);
         }
         break;
-      default:
-        alert(`Action ${action} for: ${reportName}`);
     }
   };
 
-  const handleViewAll = () => {
-    alert("Navigating to All Reports page...");
-  };
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        actionMenuRef.current &&
+        !actionMenuRef.current.contains(event.target)
+      ) {
+        setShowActionMenu(null);
+      }
+    };
+
+    if (showActionMenu !== null) {
+      window.addEventListener("click", handleClickOutside);
+    }
+
+    return () => window.removeEventListener("click", handleClickOutside);
+  }, [showActionMenu]);
 
   return (
     <Card className="border-[var(--border)] gap-0 h-full p-2 pt-4 w-full">
       <CardHeader className="px-4 flex flex-row justify-between items-center mb-2">
-        <CardTitle className="min-w-0 truncate overflow-hidden text-ellipsis">
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold text-gray-900">
-              Recent Reports
-            </h1>
-          </div>
+        <CardTitle className="text-xl font-semibold text-gray-900">
+          Recent Reports
         </CardTitle>
         <div className="flex items-center gap-4">
           <div className="relative">
@@ -149,7 +165,7 @@ const RecentReports = () => {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-48 pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+              className="block w-48 pl-10 pr-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Search recent reports..."
             />
           </div>
@@ -173,18 +189,18 @@ const RecentReports = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   <button
                     onClick={() => handleSort("name")}
-                    className="flex items-center gap-1 w-full hover:text-gray-700 transition-colors"
+                    className="flex items-center gap-1 hover:text-gray-700 transition-colors"
                   >
-                    <span>Reports</span>
+                    Reports
                     <ArrowUpDown size={16} />
                   </button>
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   <button
                     onClick={() => handleSort("dateSubmitted")}
-                    className="flex items-center gap-1 w-full hover:text-gray-700 transition-colors"
+                    className="flex items-center gap-1 hover:text-gray-700 transition-colors"
                   >
-                    <span>Date Submitted</span>
+                    Date Submitted
                     <ArrowUpDown size={16} />
                   </button>
                 </th>
@@ -203,17 +219,15 @@ const RecentReports = () => {
                     key={report.id}
                     className="hover:bg-gray-50 transition-colors"
                   >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
                       {report.name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {report.dateSubmitted ? (
-                        <span>{report.dateSubmitted}</span>
-                      ) : (
-                        <span className="text-gray-400 italic">-</span>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {report.dateSubmitted || (
+                        <span className="italic text-gray-400">-</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           report.status === "submitted"
@@ -223,42 +237,45 @@ const RecentReports = () => {
                       >
                         {report.status === "submitted"
                           ? "Submitted"
-                          : "Not submitted"}
+                          : "Not Submitted"}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap relative">
+                    <td className="px-6 py-4 relative">
                       <button
-                        onClick={() =>
+                        onClick={(e) => {
+                          e.stopPropagation(); // ⬅️ Prevent closing immediately
                           setShowActionMenu(
                             showActionMenu === report.id ? null : report.id
-                          )
-                        }
-                        className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-md flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors"
+                          );
+                        }}
+                        className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-md flex items-center justify-center text-gray-500 hover:text-gray-700"
                       >
                         <EllipsisVertical size={16} />
                       </button>
+
                       {showActionMenu === report.id && (
-                        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                        <div
+                          ref={actionMenuRef}
+                          className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                        >
                           <div className="py-1">
                             <button
-                              onClick={() => handleAction("view", report.name)}
-                              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                              onClick={() => handleAction("view", report)}
+                              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                             >
                               <Eye size={16} />
                               View Report
                             </button>
                             <button
-                              onClick={() => handleAction("edit", report.name)}
-                              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                              onClick={() => handleAction("edit", report)}
+                              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                             >
                               <Edit size={16} />
                               Edit Report
                             </button>
                             <button
-                              onClick={() =>
-                                handleAction("delete", report.name)
-                              }
-                              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                              onClick={() => handleAction("delete", report)}
+                              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                             >
                               <Trash2 size={16} />
                               Delete Report
