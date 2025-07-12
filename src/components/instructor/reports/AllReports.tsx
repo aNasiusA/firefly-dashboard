@@ -1,5 +1,11 @@
 "use client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
 import { useState, useMemo } from "react";
 import {
   Search,
@@ -8,52 +14,111 @@ import {
   Eye,
   Edit,
   Trash2,
-  ExternalLink,
 } from "lucide-react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
-const RecentReports = () => {
+const AllReports = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("Status");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [sortField, setSortField] = useState("");
   const [sortDirection, setSortDirection] = useState("asc");
   const [showActionMenu, setShowActionMenu] = useState(null);
 
+  // Extended sample data with time submitted
   const reports = [
     {
       id: 1,
       name: "January Week 1 Report",
       dateSubmitted: "25 Jan 2024",
+      timeSubmitted: "10:30 AM",
       status: "submitted",
     },
     {
       id: 2,
       name: "January Week 2 Report",
       dateSubmitted: null,
+      timeSubmitted: null,
       status: "not submitted",
     },
     {
       id: 3,
       name: "January Week 3 Report",
       dateSubmitted: "28 Jan 2024",
+      timeSubmitted: "2:45 PM",
       status: "submitted",
     },
     {
       id: 4,
       name: "January Week 4 Report",
       dateSubmitted: "02 Feb 2024",
+      timeSubmitted: "9:15 AM",
       status: "submitted",
     },
     {
       id: 5,
       name: "February Week 1 Report",
       dateSubmitted: "08 Feb 2024",
+      timeSubmitted: "11:20 AM",
       status: "submitted",
     },
     {
       id: 6,
       name: "February Week 2 Report",
       dateSubmitted: null,
+      timeSubmitted: null,
       status: "not submitted",
+    },
+    {
+      id: 7,
+      name: "February Week 3 Report",
+      dateSubmitted: "22 Feb 2024",
+      timeSubmitted: "3:30 PM",
+      status: "submitted",
+    },
+    {
+      id: 8,
+      name: "February Week 4 Report",
+      dateSubmitted: "29 Feb 2024",
+      timeSubmitted: "8:45 AM",
+      status: "submitted",
+    },
+    {
+      id: 9,
+      name: "March Week 1 Report",
+      dateSubmitted: "07 Mar 2024",
+      timeSubmitted: "1:10 PM",
+      status: "submitted",
+    },
+    {
+      id: 10,
+      name: "March Week 2 Report",
+      dateSubmitted: null,
+      timeSubmitted: null,
+      status: "not submitted",
+    },
+    {
+      id: 11,
+      name: "March Week 3 Report",
+      dateSubmitted: "21 Mar 2024",
+      timeSubmitted: "4:25 PM",
+      status: "submitted",
+    },
+    {
+      id: 12,
+      name: "March Week 4 Report",
+      dateSubmitted: "28 Mar 2024",
+      timeSubmitted: "10:05 AM",
+      status: "submitted",
     },
   ];
 
@@ -86,6 +151,23 @@ const RecentReports = () => {
           bValue = new Date(bValue);
         }
 
+        // Handle time sorting
+        if (sortField === "timeSubmitted") {
+          if (!aValue && !bValue) return 0;
+          if (!aValue) return 1;
+          if (!bValue) return -1;
+          // Convert time to 24-hour format for proper sorting
+          const convertTo24Hour = (time) => {
+            const [timePart, modifier] = time.split(" ");
+            let [hours, minutes] = timePart.split(":");
+            if (hours === "12") hours = "00";
+            if (modifier === "PM") hours = parseInt(hours, 10) + 12;
+            return hours + ":" + minutes;
+          };
+          aValue = convertTo24Hour(aValue);
+          bValue = convertTo24Hour(bValue);
+        }
+
         if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
         if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
         return 0;
@@ -95,8 +177,11 @@ const RecentReports = () => {
     return filtered;
   }, [searchTerm, statusFilter, sortField, sortDirection]);
 
-  // Show only the first 3 recent reports
-  const recentReports = filteredAndSortedReports.slice(0, 3);
+  // Pagination
+  const totalPages = Math.ceil(filteredAndSortedReports.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentReports = filteredAndSortedReports.slice(startIndex, endIndex);
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -105,6 +190,15 @@ const RecentReports = () => {
       setSortField(field);
       setSortDirection("asc");
     }
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage) => {
+    setItemsPerPage(parseInt(newItemsPerPage));
+    setCurrentPage(1);
   };
 
   const handleAction = (action, reportName) => {
@@ -126,19 +220,41 @@ const RecentReports = () => {
     }
   };
 
-  const handleViewAll = () => {
-    alert("Navigating to All Reports page...");
+  const renderPaginationItems = () => {
+    const items = [];
+    const maxVisible = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    const endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+    if (endPage - startPage + 1 < maxVisible) {
+      startPage = Math.max(1, endPage - maxVisible + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      items.push(
+        <PaginationItem key={i}>
+          <PaginationLink
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              handlePageChange(i);
+            }}
+            isActive={currentPage === i}
+          >
+            {i}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+
+    return items;
   };
 
   return (
     <Card className="border-[var(--border)] gap-0 h-full p-2 pt-4 w-full">
       <CardHeader className="px-4 flex flex-row justify-between items-center mb-2">
         <CardTitle className="min-w-0 truncate overflow-hidden text-ellipsis">
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold text-gray-900">
-              Recent Reports
-            </h1>
-          </div>
+          <h1 className="text-xl font-semibold text-gray-900">All Reports</h1>
         </CardTitle>
         <div className="flex items-center gap-4">
           <div className="relative">
@@ -150,7 +266,7 @@ const RecentReports = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="block w-48 pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
-              placeholder="Search recent reports..."
+              placeholder="Search reports..."
             />
           </div>
           <select
@@ -189,6 +305,15 @@ const RecentReports = () => {
                   </button>
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <button
+                    onClick={() => handleSort("timeSubmitted")}
+                    className="flex items-center gap-1 w-full hover:text-gray-700 transition-colors"
+                  >
+                    <span>Time Submitted</span>
+                    <ArrowUpDown size={16} />
+                  </button>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -197,8 +322,8 @@ const RecentReports = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {recentReports.length > 0 ? (
-                recentReports.map((report) => (
+              {currentReports.length > 0 ? (
+                currentReports.map((report) => (
                   <tr
                     key={report.id}
                     className="hover:bg-gray-50 transition-colors"
@@ -209,6 +334,13 @@ const RecentReports = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {report.dateSubmitted ? (
                         <span>{report.dateSubmitted}</span>
+                      ) : (
+                        <span className="text-gray-400 italic">-</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {report.timeSubmitted ? (
+                        <span>{report.timeSubmitted}</span>
                       ) : (
                         <span className="text-gray-400 italic">-</span>
                       )}
@@ -238,7 +370,7 @@ const RecentReports = () => {
                         <EllipsisVertical size={16} />
                       </button>
                       {showActionMenu === report.id && (
-                        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
                           <div className="py-1">
                             <button
                               onClick={() => handleAction("view", report.name)}
@@ -272,10 +404,10 @@ const RecentReports = () => {
               ) : (
                 <tr>
                   <td
-                    colSpan="4"
+                    colSpan="5"
                     className="px-6 py-8 text-center text-gray-500"
                   >
-                    No recent reports found matching your criteria.
+                    No reports found matching your criteria.
                   </td>
                 </tr>
               )}
@@ -283,8 +415,74 @@ const RecentReports = () => {
           </table>
         </div>
       </CardContent>
+      <CardFooter>
+        <div className="flex justify-between items-center w-full">
+          <div>
+            <p className="text-sm text-gray-700">
+              Showing {startIndex + 1} to{" "}
+              {Math.min(endIndex, filteredAndSortedReports.length)} of{" "}
+              {filteredAndSortedReports.length} results
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-700">Show:</span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => handleItemsPerPageChange(e.target.value)}
+                className="block w-20 px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+            {totalPages > 1 && (
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (currentPage > 1) handlePageChange(currentPage - 1);
+                      }}
+                      className={
+                        currentPage === 1
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }
+                    />
+                  </PaginationItem>
+                  {renderPaginationItems()}
+                  {totalPages > 5 && currentPage < totalPages - 2 && (
+                    <PaginationItem>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  )}
+                  <PaginationItem>
+                    <PaginationNext
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (currentPage < totalPages)
+                          handlePageChange(currentPage + 1);
+                      }}
+                      className={
+                        currentPage === totalPages
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            )}
+          </div>
+        </div>
+      </CardFooter>
     </Card>
   );
 };
 
-export default RecentReports;
+export default AllReports;

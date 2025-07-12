@@ -2,6 +2,7 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { FileText } from "lucide-react";
 import TotalReports from "@/components/instructor/reports/TotalReports";
 import RecentReports from "@/components/instructor/reports/RecentReports";
+import AllReports from "@/components/instructor/reports/AllReports";
 import { reportz } from "@/services/mockData";
 
 const ReportsPage = () => {
@@ -25,6 +26,9 @@ const ReportsPage = () => {
           <div className="w-3/4">
             <RecentReports />
           </div>
+        </div>
+        <div className="mt-4">
+          <AllReports />
         </div>
       </CardContent>
     </Card>
