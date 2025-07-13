@@ -22,12 +22,19 @@ const mockStudentAttendance = Array.from({ length: 50 }, (_, i) => ({
   studentIndex: i + 1,
 }));
 
+type StudentAttendanceProps = {
+  studentName: string;
+  studentIndex: number;
+  isChecked: boolean;
+  onToggle: () => void;
+};
+
 const StudentAttendance = ({
   studentName,
   studentIndex,
   isChecked,
   onToggle,
-}) => {
+}: StudentAttendanceProps) => {
   return (
     <div className="flex items-center p-2 px-4 gap-8 border-b border-gray-100 hover:bg-gray-50">
       <div className="flex gap-2 items-center">
@@ -56,12 +63,16 @@ export default function StudentAttendanceWithPagination() {
   const currentStudents = mockStudentAttendance.slice(startIndex, endIndex);
 
   // Handle page change
-  const handlePageChange = (page) => {
+  interface HandlePageChange {
+    (page: number): void;
+  }
+
+  const handlePageChange: HandlePageChange = (page) => {
     setCurrentPage(page);
   };
 
   // Handle student attendance toggle
-  const handleStudentToggle = (studentIndex) => {
+  const handleStudentToggle = (studentIndex: number) => {
     const newCheckedStudents = new Set(checkedStudents);
     if (newCheckedStudents.has(studentIndex)) {
       newCheckedStudents.delete(studentIndex);

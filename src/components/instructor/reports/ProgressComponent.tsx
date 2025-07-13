@@ -7,13 +7,13 @@ const ProgressComponent = ({
   currentStep,
   steps = [],
 }: ProgressComponentProps) => {
-  const getStepStatus = (stepId) => {
+  const getStepStatus = (stepId: number) => {
     if (stepId < currentStep) return "completed";
     if (stepId === currentStep) return "current";
     return "pending";
   };
 
-  const getStepClasses = (status) => {
+  const getStepClasses = (status: string) => {
     const baseClasses =
       "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-200 relative z-10";
 

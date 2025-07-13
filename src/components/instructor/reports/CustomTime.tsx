@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, ChangeEvent } from "react";
 import { Input } from "@/components/ui/input";
 
 const CustomTime = () => {
   const [time, setTime] = useState("");
 
-  const formatTimeInput = (value) => {
+  const formatTimeInput = (value: string): string => {
     const numbers = value.replace(/\D/g, "");
 
     if (numbers.length === 0) return "";
@@ -15,9 +15,8 @@ const CustomTime = () => {
     return `${hours}:${minutes}`;
   };
 
-  const handleChange = (e) => {
-    const cursorPosition = e.target.selectionStart;
-    const formatted = formatTimeInput(e.target.value, cursorPosition);
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatTimeInput(e.target.value);
     setTime(formatted);
   };
 

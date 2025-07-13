@@ -15,7 +15,17 @@ import {
 import CustomTime from "@/components/instructor/reports/CustomTime";
 import CustomDate from "@/components/instructor/reports/CustomDate";
 
-const ReportEdit1 = ({ setCurrentStep, currentStep, totalSteps }) => {
+type ReportEdit2Props = {
+  setCurrentStep: (step: number) => void;
+  currentStep: number;
+  totalSteps: number;
+};
+
+const ReportEdit1 = ({
+  setCurrentStep,
+  currentStep,
+  totalSteps,
+}: ReportEdit2Props) => {
   return (
     <>
       <Card className="border-[var(--border)] py-4 gap-3 mb-16 w-full">
