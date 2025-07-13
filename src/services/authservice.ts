@@ -38,6 +38,7 @@ export const logout = async () => {
   try {
     axios.post(`${baseEndPoint}/api/logout/`, {}, { withCredentials: true });
     document.cookie = "role=; path=/; max-age=0;";
+    document.cookie = "id=; path=/; max-age=0;";
     return { message: "Logout successful" };
   } catch (error) {
     if (axios.isAxiosError(error)) {

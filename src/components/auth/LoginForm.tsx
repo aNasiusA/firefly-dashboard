@@ -50,8 +50,10 @@ const LoginForm = () => {
       );
 
       const user_role = response.user.user_role.toLowerCase();
+      const user_id = response.user.id;
 
-      document.cookie = `role=${user_role}; path=/; max-age=3600;`;
+      document.cookie = `role=${user_role}; path=/; max-age=900;`;
+      document.cookie = `id=${user_id}; path=/; max-age=900;`;
 
       navigate({
         href: `/${user_role}/dashboard`,

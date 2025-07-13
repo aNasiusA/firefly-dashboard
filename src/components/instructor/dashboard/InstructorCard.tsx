@@ -1,3 +1,4 @@
+"use client";
 import {
   Card,
   CardAction,
@@ -7,7 +8,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { QrCode } from "lucide-react";
 import Image from "next/image";
-
+import { getInstructorData } from "@/app/(dashboard)/instructor/dashboard/dataFetch";
+import { useEffect } from "react";
 export interface Instructor {
   name: string;
   position: string;
@@ -21,6 +23,9 @@ interface InstructorCardProps {
 }
 
 const InstructorCard = ({ instructor }: InstructorCardProps) => {
+  useEffect(() => {
+    getInstructorData();
+  });
   return (
     <Card className="flex border-[var(--border)] flex-col w-full p-7 min-h-52 gap-2">
       <div className="w-full text-center">
