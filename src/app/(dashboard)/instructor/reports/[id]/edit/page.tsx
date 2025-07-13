@@ -1,5 +1,5 @@
 "use client";
-import { useParams } from "next/navigation";
+// import { useParams } from "next/navigation";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { useState } from "react";
 import { useNavigation } from "@/hooks/dashboardNavigation";
@@ -10,9 +10,10 @@ import ReportEdit3 from "@/components/instructor/reports/ReportEdit3";
 import ProgressComponent from "@/components/instructor/reports/ProgressComponent";
 
 const Page = () => {
-  const params = useParams();
+  // const params = useParams();
   const { navigate, isNavigating } = useNavigation();
-  const [reportName, setReportName] = useState("January Week 2 Report");
+  const [reportName] = useState("January Week 2 Report");
+  // setReportName
   const [currentStep, setCurrentStep] = useState(1);
 
   const steps = [
@@ -21,15 +22,20 @@ const Page = () => {
     { id: 3, label: "Feedback" },
   ];
   const handleReportNavigation = () => {
-    const role = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("role"))
-      ?.split("=")[1];
-    navigate({
-      href: `/${role}/reports`,
-      loadingMessage: `Loading Reports page...`,
-      successMessage: `Reports page loaded successfully`,
-    });
+    try {
+      const role = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("role"))
+        ?.split("=")[1];
+      navigate({
+        href: `/${role}/reports`,
+        loadingMessage: `Loading Reports page...`,
+        successMessage: `Reports page loaded successfully`,
+      });
+    } catch (error) {
+      console.log(error);
+    } finally {
+    }
   };
   return (
     <>
@@ -39,6 +45,7 @@ const Page = () => {
         <div className="flex items-center gap-1 text-gray-400">
           <Button
             onClick={handleReportNavigation}
+            disabled={isNavigating}
             className="bg-transparent shadow-none text-gray-400 hover:bg-transparent cursor-pointer p-0"
           >
             Reports

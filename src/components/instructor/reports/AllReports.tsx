@@ -1,4 +1,6 @@
 "use client";
+
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -6,8 +8,6 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { useState, useMemo, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
 import {
   Search,
   ArrowUpDown,
@@ -27,147 +27,201 @@ import {
 } from "@/components/ui/pagination";
 import { useNavigation } from "@/hooks/dashboardNavigation";
 
-const AllReports = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("Status");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [sortField, setSortField] = useState("");
-  const [sortDirection, setSortDirection] = useState("asc");
+// Types
+interface Report {
+  id: number;
+  name: string;
+  dateSubmitted: string | null;
+  timeSubmitted: string | null;
+  status: "submitted" | "not submitted";
+}
+
+type StatusFilter = "Status" | "Submitted" | "Not Submitted";
+type SortField = keyof Report | "";
+type SortDirection = "asc" | "desc";
+type ActionType = "view" | "edit" | "delete";
+
+interface NavigationParams {
+  href: string;
+  loadingMessage: string;
+  successMessage: string;
+}
+
+// Mock data - in a real app, this would come from an API
+const MOCK_REPORTS: Report[] = [
+  {
+    id: 1,
+    name: "January Week 1 Report",
+    dateSubmitted: "25 Jan 2024",
+    timeSubmitted: "10:30 AM",
+    status: "submitted",
+  },
+  {
+    id: 2,
+    name: "January Week 2 Report",
+    dateSubmitted: null,
+    timeSubmitted: null,
+    status: "not submitted",
+  },
+  {
+    id: 3,
+    name: "January Week 3 Report",
+    dateSubmitted: "28 Jan 2024",
+    timeSubmitted: "2:45 PM",
+    status: "submitted",
+  },
+  {
+    id: 4,
+    name: "January Week 4 Report",
+    dateSubmitted: "02 Feb 2024",
+    timeSubmitted: "9:15 AM",
+    status: "submitted",
+  },
+  {
+    id: 5,
+    name: "February Week 1 Report",
+    dateSubmitted: "08 Feb 2024",
+    timeSubmitted: "11:20 AM",
+    status: "submitted",
+  },
+  {
+    id: 6,
+    name: "February Week 2 Report",
+    dateSubmitted: null,
+    timeSubmitted: null,
+    status: "not submitted",
+  },
+  {
+    id: 7,
+    name: "February Week 3 Report",
+    dateSubmitted: "22 Feb 2024",
+    timeSubmitted: "3:30 PM",
+    status: "submitted",
+  },
+  {
+    id: 8,
+    name: "February Week 4 Report",
+    dateSubmitted: "29 Feb 2024",
+    timeSubmitted: "8:45 AM",
+    status: "submitted",
+  },
+  {
+    id: 9,
+    name: "March Week 1 Report",
+    dateSubmitted: "07 Mar 2024",
+    timeSubmitted: "1:10 PM",
+    status: "submitted",
+  },
+  {
+    id: 10,
+    name: "March Week 2 Report",
+    dateSubmitted: null,
+    timeSubmitted: null,
+    status: "not submitted",
+  },
+  {
+    id: 11,
+    name: "March Week 3 Report",
+    dateSubmitted: "21 Mar 2024",
+    timeSubmitted: "4:25 PM",
+    status: "submitted",
+  },
+  {
+    id: 12,
+    name: "March Week 4 Report",
+    dateSubmitted: "28 Mar 2024",
+    timeSubmitted: "10:05 AM",
+    status: "submitted",
+  },
+];
+
+const AllReports: React.FC = () => {
+  // State with proper types
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("Status");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
+  const [sortField, setSortField] = useState<SortField>("");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const [showActionMenu, setShowActionMenu] = useState<number | null>(null);
-  const actionMenuRef = useRef<HTMLDivElement | null>(null);
+
+  // Refs
+  const actionMenuRef = useRef<HTMLDivElement>(null);
+
+  // Custom hook
   const { navigate, isNavigating } = useNavigation();
 
-  const reports = [
-    {
-      id: 1,
-      name: "January Week 1 Report",
-      dateSubmitted: "25 Jan 2024",
-      timeSubmitted: "10:30 AM",
-      status: "submitted",
-    },
-    {
-      id: 2,
-      name: "January Week 2 Report",
-      dateSubmitted: null,
-      timeSubmitted: null,
-      status: "not submitted",
-    },
-    {
-      id: 3,
-      name: "January Week 3 Report",
-      dateSubmitted: "28 Jan 2024",
-      timeSubmitted: "2:45 PM",
-      status: "submitted",
-    },
-    {
-      id: 4,
-      name: "January Week 4 Report",
-      dateSubmitted: "02 Feb 2024",
-      timeSubmitted: "9:15 AM",
-      status: "submitted",
-    },
-    {
-      id: 5,
-      name: "February Week 1 Report",
-      dateSubmitted: "08 Feb 2024",
-      timeSubmitted: "11:20 AM",
-      status: "submitted",
-    },
-    {
-      id: 6,
-      name: "February Week 2 Report",
-      dateSubmitted: null,
-      timeSubmitted: null,
-      status: "not submitted",
-    },
-    {
-      id: 7,
-      name: "February Week 3 Report",
-      dateSubmitted: "22 Feb 2024",
-      timeSubmitted: "3:30 PM",
-      status: "submitted",
-    },
-    {
-      id: 8,
-      name: "February Week 4 Report",
-      dateSubmitted: "29 Feb 2024",
-      timeSubmitted: "8:45 AM",
-      status: "submitted",
-    },
-    {
-      id: 9,
-      name: "March Week 1 Report",
-      dateSubmitted: "07 Mar 2024",
-      timeSubmitted: "1:10 PM",
-      status: "submitted",
-    },
-    {
-      id: 10,
-      name: "March Week 2 Report",
-      dateSubmitted: null,
-      timeSubmitted: null,
-      status: "not submitted",
-    },
-    {
-      id: 11,
-      name: "March Week 3 Report",
-      dateSubmitted: "21 Mar 2024",
-      timeSubmitted: "4:25 PM",
-      status: "submitted",
-    },
-    {
-      id: 12,
-      name: "March Week 4 Report",
-      dateSubmitted: "28 Mar 2024",
-      timeSubmitted: "10:05 AM",
-      status: "submitted",
-    },
-  ];
+  // Utility functions
+  const convertTo24Hour = (time: string): string => {
+    const [timePart, modifier] = time.split(" ");
+    let hours;
+    const [hoursTemp, minutes] = timePart.split(":");
+    hours = hoursTemp;
+    if (hours === "12") hours = "00";
+    if (modifier === "PM") {
+      hours = (parseInt(hours, 10) + 12).toString();
+    }
+    return `${hours.padStart(2, "0")}:${minutes}`;
+  };
 
-  const filteredAndSortedReports = useMemo(() => {
-    const filtered = reports.filter((report) => {
+  const getRoleFromCookie = (): string => {
+    return (
+      document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("role"))
+        ?.split("=")[1] || ""
+    );
+  };
+
+  // Memoized filtered and sorted reports
+  const filteredAndSortedReports = useMemo((): Report[] => {
+    const filtered = MOCK_REPORTS.filter((report) => {
       const matchesSearch = report.name
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
+
       const matchesStatus =
         statusFilter === "Status" ||
         (statusFilter === "Submitted" && report.status === "submitted") ||
         (statusFilter === "Not Submitted" && report.status === "not submitted");
+
       return matchesSearch && matchesStatus;
     });
 
     if (sortField) {
       filtered.sort((a, b) => {
-        let aValue = a[sortField];
-        let bValue = b[sortField];
+        const aValue = a[sortField];
+        const bValue = b[sortField];
 
         if (sortField === "dateSubmitted") {
           if (!aValue && !bValue) return 0;
           if (!aValue) return 1;
           if (!bValue) return -1;
-          aValue = new Date(aValue);
-          bValue = new Date(bValue);
+          return new Date(aValue).getTime() - new Date(bValue).getTime();
         }
 
         if (sortField === "timeSubmitted") {
           if (!aValue && !bValue) return 0;
           if (!aValue) return 1;
           if (!bValue) return -1;
-          const convertTo24Hour = (time: string) => {
-            const [timePart, modifier] = time.split(" ");
-            let [hours, minutes] = timePart.split(":");
-            if (hours === "12") hours = "00";
-            if (modifier === "PM")
-              hours = (parseInt(hours, 10) + 12).toString();
-            return `${hours.padStart(2, "0")}:${minutes}`;
-          };
-          aValue = convertTo24Hour(aValue);
-          bValue = convertTo24Hour(bValue);
+
+          const aTime = convertTo24Hour(aValue as string);
+          const bTime = convertTo24Hour(bValue as string);
+          return (
+            aTime.localeCompare(bTime) * (sortDirection === "asc" ? 1 : -1)
+          );
         }
 
-        if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-        if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+        if (typeof aValue === "string" && typeof bValue === "string") {
+          return sortDirection === "asc"
+            ? aValue.localeCompare(bValue)
+            : bValue.localeCompare(aValue);
+        }
+
+        if (typeof aValue === "number" && typeof bValue === "number") {
+          return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
+        }
+
         return 0;
       });
     }
@@ -175,12 +229,14 @@ const AllReports = () => {
     return filtered;
   }, [searchTerm, statusFilter, sortField, sortDirection]);
 
+  // Pagination calculations
   const totalPages = Math.ceil(filteredAndSortedReports.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentReports = filteredAndSortedReports.slice(startIndex, endIndex);
 
-  const handleSort = (field: string) => {
+  // Event handlers
+  const handleSort = (field: SortField): void => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
@@ -189,31 +245,25 @@ const AllReports = () => {
     }
   };
 
-  const handleAction = (action: string, report: any) => {
+  const handleAction = (action: ActionType, report: Report): void => {
     setShowActionMenu(null);
-    const role = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("role"))
-      ?.split("=")[1];
+    const role = getRoleFromCookie();
+
+    const navigationParams: NavigationParams = {
+      href: `/${role}/reports/${report.id}${action === "edit" ? "/edit" : ""}`,
+      loadingMessage: `Loading ${report.name}...`,
+      successMessage: `${report.name} loaded successfully`,
+    };
 
     switch (action) {
       case "view":
-        navigate({
-          href: `/${role}/reports/${report.id}`,
-          loadingMessage: `Loading ${report.name}...`,
-          successMessage: `${report.name} loaded successfully`,
-        });
-        break;
       case "edit":
-        navigate({
-          href: `/${role}/reports/${report.id}/edit`,
-          loadingMessage: `Loading ${report.name}...`,
-          successMessage: `${report.name} loaded successfully`,
-        });
+        navigate(navigationParams);
         break;
       case "delete":
         if (confirm(`Are you sure you want to delete: ${report.name}?`)) {
           alert(`Deleted: ${report.name}`);
+          // In a real app, you would call an API to delete the report
         }
         break;
       default:
@@ -221,13 +271,30 @@ const AllReports = () => {
     }
   };
 
-  const handleItemsPerPageChange = (value: string) => {
-    setItemsPerPage(parseInt(value));
+  const handleItemsPerPageChange = (value: string): void => {
+    setItemsPerPage(parseInt(value, 10));
     setCurrentPage(1);
   };
 
-  const renderPaginationItems = () => {
-    const items = [];
+  const handlePageChange = (page: number): void => {
+    setCurrentPage(page);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page on search
+  };
+
+  const handleStatusFilterChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ): void => {
+    setStatusFilter(e.target.value as StatusFilter);
+    setCurrentPage(1); // Reset to first page on filter change
+  };
+
+  // Render pagination items
+  const renderPaginationItems = (): React.ReactNode[] => {
+    const items: React.ReactNode[] = [];
     const maxVisible = 5;
     let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
     const endPage = Math.min(totalPages, startPage + maxVisible - 1);
@@ -241,9 +308,9 @@ const AllReports = () => {
         <PaginationItem key={i}>
           <PaginationLink
             href="#"
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
               e.preventDefault();
-              setCurrentPage(i);
+              handlePageChange(i);
             }}
             isActive={currentPage === i}
           >
@@ -256,9 +323,9 @@ const AllReports = () => {
     return items;
   };
 
-  // Detect click outside action menu
+  // Effect for handling clicks outside action menu
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
+    const handleClickOutside = (e: MouseEvent): void => {
       if (
         actionMenuRef.current &&
         !actionMenuRef.current.contains(e.target as Node)
@@ -290,23 +357,25 @@ const AllReports = () => {
             <input
               type="text"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
               className="block w-48 pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
               placeholder="Search reports..."
             />
           </div>
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={handleStatusFilterChange}
             className="block w-32 px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
           >
-            <option>Status</option>
-            <option>Submitted</option>
-            <option>Not Submitted</option>
+            <option value="Status">Status</option>
+            <option value="Submitted">Submitted</option>
+            <option value="Not Submitted">Not Submitted</option>
           </select>
         </div>
       </CardHeader>
+
       <hr className="w-full border-t border-[#f1f1f2]" />
+
       <CardContent className="px-3 mt-3">
         <div className="overflow-x-auto">
           <table className="min-w-full">
@@ -316,6 +385,7 @@ const AllReports = () => {
                   <button
                     onClick={() => handleSort("name")}
                     className="flex items-center gap-1 w-full hover:text-gray-700"
+                    disabled={isNavigating}
                   >
                     <span>Reports</span>
                     <ArrowUpDown size={16} />
@@ -325,6 +395,7 @@ const AllReports = () => {
                   <button
                     onClick={() => handleSort("dateSubmitted")}
                     className="flex items-center gap-1 w-full hover:text-gray-700"
+                    disabled={isNavigating}
                   >
                     <span>Date Submitted</span>
                     <ArrowUpDown size={16} />
@@ -334,6 +405,7 @@ const AllReports = () => {
                   <button
                     onClick={() => handleSort("timeSubmitted")}
                     className="flex items-center gap-1 w-full hover:text-gray-700"
+                    disabled={isNavigating}
                   >
                     <span>Time Submitted</span>
                     <ArrowUpDown size={16} />
@@ -379,12 +451,13 @@ const AllReports = () => {
                     </td>
                     <td className="px-6 py-4 relative">
                       <button
+                        disabled={isNavigating}
                         onClick={() =>
                           setShowActionMenu(
                             showActionMenu === report.id ? null : report.id
                           )
                         }
-                        className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-md flex items-center justify-center text-gray-500 hover:text-gray-700"
+                        className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-md flex items-center justify-center text-gray-500 hover:text-gray-700 disabled:opacity-50"
                       >
                         <EllipsisVertical size={16} />
                       </button>
@@ -395,20 +468,23 @@ const AllReports = () => {
                         >
                           <div className="py-1">
                             <button
+                              disabled={isNavigating}
                               onClick={() => handleAction("view", report)}
-                              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                             >
                               <Eye size={16} /> View Report
                             </button>
                             <button
+                              disabled={isNavigating}
                               onClick={() => handleAction("edit", report)}
-                              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                             >
                               <Edit size={16} /> Edit Report
                             </button>
                             <button
+                              disabled={isNavigating}
                               onClick={() => handleAction("delete", report)}
-                              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
                             >
                               <Trash2 size={16} /> Delete Report
                             </button>
@@ -432,6 +508,7 @@ const AllReports = () => {
           </table>
         </div>
       </CardContent>
+
       <CardFooter>
         <div className="flex justify-between items-center w-full">
           <p className="text-sm text-gray-700">
@@ -458,9 +535,9 @@ const AllReports = () => {
                   <PaginationItem>
                     <PaginationPrevious
                       href="#"
-                      onClick={(e) => {
+                      onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
                         e.preventDefault();
-                        if (currentPage > 1) setCurrentPage(currentPage - 1);
+                        if (currentPage > 1) handlePageChange(currentPage - 1);
                       }}
                       className={
                         currentPage === 1
@@ -478,10 +555,10 @@ const AllReports = () => {
                   <PaginationItem>
                     <PaginationNext
                       href="#"
-                      onClick={(e) => {
+                      onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
                         e.preventDefault();
                         if (currentPage < totalPages)
-                          setCurrentPage(currentPage + 1);
+                          handlePageChange(currentPage + 1);
                       }}
                       className={
                         currentPage === totalPages

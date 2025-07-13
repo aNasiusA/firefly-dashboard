@@ -1,9 +1,7 @@
 "use client";
 import {
   Card,
-  CardHeader,
   CardContent,
-  CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -23,7 +21,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-const ReportEdit2 = ({ setCurrentStep, currentStep, totalSteps }) => {
+type ReportEdit2Props = {
+  setCurrentStep: (step: number) => void;
+  currentStep: number;
+  totalSteps: number;
+};
+
+const ReportEdit2 = ({ setCurrentStep, currentStep, totalSteps }: ReportEdit2Props) => {
   return (
     <>
       <Card className="border-border py-4 gap-3 mb-16 w-full">

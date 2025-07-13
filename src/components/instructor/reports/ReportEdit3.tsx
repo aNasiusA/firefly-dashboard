@@ -1,30 +1,16 @@
 "use client";
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+type ReportEdit2Props = {
+  setCurrentStep: (step: number) => void;
+  currentStep: number;
+  totalSteps: number;
+};
 
-const ReportEdit3 = ({ setCurrentStep, currentStep, totalSteps }) => {
+const ReportEdit3 = ({ setCurrentStep, currentStep }: ReportEdit2Props) => {
   return (
     <>
       <Card className="border-border py-4 gap-3 mb-16 w-full">
